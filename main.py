@@ -5,13 +5,21 @@ import argparse
 import hashlib
 import os
 import shutil
+import time
 from pathlib import Path
+
+start_time = time.monotonic()
 
 parser = argparse.ArgumentParser(description="Copy and verify the entry artwork.")
 parser.add_argument(
     "--output",
     default=None,
     help="Output directory for entry.png (default: $MAKEFUN_OUTPUT_DIR or /output)",
+)
+parser.add_argument(
+    "--quiet",
+    action="store_true",
+    help="Only print the SHA-256 hash, without the summary lines.",
 )
 args = parser.parse_args()
 
@@ -32,5 +40,10 @@ if source_sha != destination_sha:
         f"Copied entry image verification failed: {destination} "
         f"(source sha256 {source_sha}, output sha256 {destination_sha})"
     )
-print(f"Copied and verified {destination.stat().st_size} bytes at {destination}")
-print(f"SHA-256 verified: {destination_sha}")
+if args.quiet:
+    print(destination_sha)
+else:
+    elapsed = time.monotonic() - start_time
+    print(f"Copied and verified {destination.stat().st_size} bytes at {destination}")
+    print(f"SHA-256 verified: {destination_sha}")
+    print(f"done in {elapsed:.2f}s")
